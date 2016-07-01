@@ -13,7 +13,7 @@ public class MainActivity extends AppCompatActivity {
     private String Tag = "MainActivity";
     private RequestPermission requestPermission;
 
-    private String[] permissions = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
+    private String[] permissions = new String[]{
             Manifest.permission.CALL_PHONE};
 
     @Override
