@@ -1,16 +1,15 @@
 package com.wpf.requestpermissiondemo;
 
 import android.Manifest;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
 import com.wpf.requestpermission.RequestPermissionActivity;
 import com.wpf.requestpermission.RequestResult;
 
-public class MainActivity extends RequestPermissionActivity {
+public class Main2Activity extends RequestPermissionActivity {
 
-    private String Tag = "MainActivity";
+    private String Tag = "Main2Activity";
 
     private String permission = Manifest.permission.CALL_PHONE;
     private String[] permissions = new String[]{permission};
@@ -18,9 +17,9 @@ public class MainActivity extends RequestPermissionActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main2);
 
-        request(this, permissions, 1, new RequestResult() {
+        request(this, permission, 2, new RequestResult() {
             @Override
             public void onSuccess() {
                 Log.e(Tag,"成功");
@@ -29,9 +28,9 @@ public class MainActivity extends RequestPermissionActivity {
             @Override
             public void onFail(String[] failList) {
                 Log.e(Tag,"失败");
-                startActivity(new Intent(MainActivity.this,Main2Activity.class));
+                finish();
+
             }
         });
-
     }
 }

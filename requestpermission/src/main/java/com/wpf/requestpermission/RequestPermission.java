@@ -10,51 +10,41 @@ import android.support.v4.content.ContextCompat;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by 王朋飞 on 7-1-0001.
- * 申请权限
- */
+public class RequestPermission {
 
-public abstract class RequestPermission {
+    private static int requestCode;
+    private static List<Activity> activityList = new ArrayList<>();
+    private static List<RequestResult> requestResultList = new ArrayList<>();
 
-    private int requestCode;
-    private Activity activity;
-    private String[] permissionList;
-
-    protected RequestPermission(Activity activity, String[] permissionList, int requestCode) {
-        this.requestCode = requestCode;
-        this.activity = activity;
-        this.permissionList = permissionList;
+    public static void request(Activity activity, String[] permissionList, int requestCode, RequestResult requestResult) {
+        RequestPermission.activityList.add(0,activity);
+        RequestPermission.requestCode = requestCode;
+        RequestPermission.requestResultList.add(0,requestResult);
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            permissionList = getShouldRequestList();
+            permissionList = getShouldRequestList(permissionList);
             if(permissionList.length != 0)
                 ActivityCompat.requestPermissions(activity, permissionList, requestCode);
             else onSuccess();
         } else onSuccess();
     }
 
-    protected RequestPermission(Activity activity, String permission, int requestCode) {
-        this.requestCode = requestCode;
-        this.activity = activity;
-        this.permissionList = new String[]{permission};
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            permissionList = getShouldRequestList();
-            if(permissionList.length != 0)
-                ActivityCompat.requestPermissions(activity, permissionList, requestCode);
-            else onSuccess();
-        } else onSuccess();
+    public static void request(Activity activity, String permission, int requestCode, RequestResult requestResult) {
+        request(activity,new String[]{permission},requestCode,requestResult);
     }
 
-    private String[] getShouldRequestList() {
+    private static String[] getShouldRequestList(String[] permissionList) {
         List<String> permissions = new ArrayList<>();
-        for(String permission : permissionList) {
-            int checkCallPhonePermission = ContextCompat.checkSelfPermission(activity, permission);
-            if(checkCallPhonePermission != PackageManager.PERMISSION_GRANTED) permissions.add(permission);
+        if(!activityList.isEmpty()) {
+            for (String permission : permissionList) {
+                int checkCallPhonePermission = ContextCompat.checkSelfPermission(activityList.get(0), permission);
+                if (checkCallPhonePermission != PackageManager.PERMISSION_GRANTED)
+                    permissions.add(permission);
+            }
         }
         return permissions.toArray(new String[]{});
     }
 
-    private String[] getFailList(String[] permissionList,int[] grantResults) {
+    private static String[] getFailList(String[] permissionList,int[] grantResults) {
         List<String> failList = new ArrayList<>();
         for(int i = 0;i<grantResults.length;++i) {
             if(grantResults[i] == -1) failList.add(permissionList[i]);
@@ -62,18 +52,30 @@ public abstract class RequestPermission {
         return failList.toArray(new String[]{});
     }
 
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if(requestCode == this.requestCode && Arrays.equals(permissions, getShouldRequestList())) {
+    static void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if(requestCode == RequestPermission.requestCode) {
             String[] failList = getFailList(permissions,grantResults);
-            if(failList.length == 0)
-                this.onSuccess();
-            else
-                this.onFail(failList);
+            if(failList.length == 0) onSuccess();
+            else onFail(failList);
         }
-
     }
 
-    public abstract void onSuccess();
+    private static void onSuccess() {
+        if(!requestResultList.isEmpty()) {
+            requestResultList.get(0).onSuccess();
+            removeActivity();
+        }
+    }
 
-    public abstract void onFail(String[] failList);
+    private static void onFail(String[] failList) {
+        if(!requestResultList.isEmpty()) {
+            requestResultList.get(0).onFail(failList);
+            removeActivity();
+        }
+    }
+
+    private static void removeActivity() {
+        if(!activityList.isEmpty()) activityList.remove(0);
+        if(!requestResultList.isEmpty()) requestResultList.remove(0);
+    }
 }
