@@ -52,7 +52,7 @@ public class RequestPermission {
         return failList.toArray(new String[]{});
     }
 
-    static void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public static void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if(requestCode == RequestPermission.requestCode) {
             String[] failList = getFailList(permissions,grantResults);
             if(failList.length == 0) onSuccess();
